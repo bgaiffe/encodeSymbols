@@ -16,7 +16,7 @@
     <xsl:param name="cde" as="xs:integer?"/>
 
     <xsl:choose>
-      <xsl:when test="$cde &gt; 128511 and $cde &lt; 128592">
+      <xsl:when test="$cde &gt; 65535">
 	true
       </xsl:when>
       <xsl:otherwise>
@@ -247,7 +247,7 @@
   
     <xsl:variable name="paths">
       <paths>
-	<path>TEI/teiHeader/encodingDesc/charDecl/</path>
+	<path>teiCorpus/teiHeader/encodingDesc/charDecl/</path>
       </paths>
     </xsl:variable>
     <xsl:variable name="p2">
@@ -291,7 +291,7 @@
 
   <xsl:template match="tei:charDecl" mode="createCharDecl">
     <xsl:copy>
-      <xsl:for-each-group select="ancestor::tei:TEI/descendant::tei:c" group-by="text()">
+      <xsl:for-each-group select="//descendant::tei:c" group-by="text()">
 	<!-- <xsl:variable name="cd" select="atilf:getUnicode(my:int-to-hex(string-to-codepoints(current-group()/text())))"/> -->
 	<xsl:variable name="cd" select="atilf:getUnicode(current-group()[1]/text())"/>
 	<xsl:apply-templates select="$cd" mode="createCharDecl"/>
@@ -324,10 +324,10 @@
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
       <xsl:attribute name="corresp">
-	<xsl:value-of select="concat('#', ancestor::tei:TEI/descendant::tei:char[tei:mapping[@type='standard']/text()=$montexte]/@xml:id)"/>
+	<xsl:value-of select="concat('#', /descendant::tei:char[tei:mapping[@type='standard']/text()=$montexte]/@xml:id)"/>
       </xsl:attribute>
       <xsl:attribute name="type">
-	<xsl:value-of select="ancestor::tei:TEI/descendant::tei:char[tei:mapping[@type='standard']/text()=$montexte]/tei:desc"/>
+	<xsl:value-of select="//tei:char[tei:mapping[@type='standard']/text()=$montexte]/tei:desc"/>
       </xsl:attribute>
       <xsl:apply-templates mode="refToChars"/>
     </xsl:copy>
