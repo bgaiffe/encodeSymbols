@@ -4,11 +4,19 @@
 <!-- On devrait ajouter le type... (bloc) -->
 
 
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:atilf="http://www.atilf.fr" version="2.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:my="http://www.example.com/my" xmlns="http://www.tei-c.org/ns/1.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:atilf="http://www.atilf.fr" version="2.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:my="http://www.example.com/my" xmlns="http://www.tei-c.org/ns/1.0" xmlns:ucd="http://www.unicode.org/ns/2003/ucd/1.0">
 
   <xsl:output method="xml"/>
 
 
+  <!-- if ucdLocal is "no" we fetch character information from :
+       https://unicode-table.com/.
+       if not, then we use the local file ucd.all.grouped.xml
+       that the user got at http://unicode.org/ (http://www.unicode.org/Public/UCD/latest/ucdxml/ucd.all.grouped.zip )-->
+  
+  <xsl:param name="ucdLocal"><!--no-->yes</xsl:param>
+  <xsl:param name="ucdAllGroupedPath">ucd.all.grouped.xml</xsl:param>
+  
 
   <!-- modify this in order to decide what are the symbols to encode... -->
   <!-- parameter is the unicode code -->
@@ -233,6 +241,37 @@
     </char>
   </xsl:function>
 
+
+  <xsl:function name="atilf:getUnicodeFromFile">
+    <xsl:param name="char"/>
+    <xsl:variable name="code" select="my:int-to-hex(string-to-codepoints($char))"/>
+
+    <xsl:variable name="numberOfZeros" select="4 - string-length($code)"/>
+    <xsl:variable name="cp" select="concat(string-join((for $i in 1 to $numberOfZeros return '0'), ''), $code)"/>
+    
+    <xsl:variable name="ucdChar" select="document($ucdAllGroupedPath)/descendant::ucd:char[@cp=$cp]"/>
+
+    
+    <char>
+      <charName><xsl:value-of select="$ucdChar/@na"/></charName>
+      <mapping type="unicode">
+	<xsl:value-of select="$cp"/>
+      </mapping>
+      <mapping type="standard">
+	<xsl:value-of select="$char"/>
+      </mapping>
+      <desc>
+	<xsl:value-of select="$ucdChar/ancestor::ucd:group/@blk"/>
+      </desc>
+    </char>
+    
+
+
+
+  </xsl:function>
+
+
+  
   <xsl:template match="/">
     <xsl:variable name="p1">
       <xsl:apply-templates mode="copy"/>
@@ -293,7 +332,17 @@
     <xsl:copy>
       <xsl:for-each-group select="//descendant::tei:c" group-by="text()">
 	<!-- <xsl:variable name="cd" select="atilf:getUnicode(my:int-to-hex(string-to-codepoints(current-group()/text())))"/> -->
-	<xsl:variable name="cd" select="atilf:getUnicode(current-group()[1]/text())"/>
+	<xsl:variable name="cd">
+	  <xsl:choose>
+	    <xsl:when test="$ucdLocal='no'">
+	      <xsl:copy-of select="atilf:getUnicode(current-group()[1]/text())"/>
+	    </xsl:when>
+	    <xsl:otherwise>
+	       <xsl:copy-of select="atilf:getUnicodeFromFile(current-group()[1]/text())"/>
+	    </xsl:otherwise>
+	  </xsl:choose>
+	</xsl:variable>
+
 	<xsl:apply-templates select="$cd" mode="createCharDecl"/>
       </xsl:for-each-group>
     </xsl:copy>
