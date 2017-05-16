@@ -14,7 +14,7 @@
        if not, then we use the local file ucd.all.grouped.xml
        that the user got at http://unicode.org/ (http://www.unicode.org/Public/UCD/latest/ucdxml/ucd.all.grouped.zip )-->
   
-  <xsl:param name="ucdLocal"><!--no-->yes</xsl:param>
+  <xsl:param name="ucdLocal"><!--yes-->no</xsl:param>
   <xsl:param name="ucdAllGroupedPath">ucd.all.grouped.xml</xsl:param>
   
 
