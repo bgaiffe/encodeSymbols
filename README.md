@@ -6,3 +6,9 @@ a char in charDecl with the name of the char and the instances of teh cjhar in t
 
 test with "saxon Emojis.xml encodeSymbols.xsl".
 
+By default, the character names are fetched from http://unicode-table.com.
+In pratice, you probably will want to get a copy of ucd.all.grouped.xml from
+ http://unicode.org/ (http://www.unicode.org/Public/UCD/latest/ucdxml/ucd.all.grouped.zip )and modify the parameters ucdLocal and ucdAllGroupedPath accordingly.
+
+I would be surprised if this was bug free :-)
+
